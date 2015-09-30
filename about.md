@@ -1,11 +1,7 @@
 ---
 layout: page
-title: About
+title: About Me
 permalink: /about/
 ---
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](http://jekyllrb.com/)
-
-You can find the source code for the Jekyll new theme at: [github.com/jglovier/jekyll-new](https://github.com/jglovier/jekyll-new)
-
-You can find the source code for Jekyll at [github.com/jekyll/jekyll](https://github.com/jekyll/jekyll)
+Hey ! This is Raman . I like to think of myself a computer scientist ; but I am just a developer :( . Anyway ! This is a kind of a blog about the things I learn and I hope this will motivate me to keep my focus . Send me a mail if you want to talk . I Love football , tennis , basketball , technology , science in general , avid pc gamer . CATCH A RIDE !!!.
