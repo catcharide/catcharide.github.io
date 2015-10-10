@@ -1,0 +1,51 @@
+---
+layout: post
+title:  "Some nuggets/learnings"
+date:   2015-09-24 13:37:27
+categories: jekyll update
+---
+
+JSON Serialization of a list of objects in python
+-------------------------------------------------
+1. Hi . I was trying to save a python object to mongo db . The problem was the object had a list of some other objects in it. Eg:- Object(name,roll_no,list of subjects). Now python was having problem to serialize this subject object.
+
+```python
+
+	class Subject:
+	    
+	    def __init__(self,name,grade):
+	        self.name = name
+	        self.grade = grade
+	    
+	class Student:
+	    
+	    def __init__(self,name,subjects):
+	        self.name = name
+	        self.subjects = subjects
+
+
+```
+
+Now if you try to dump Student object as :-
+
+```python
+
+	subjects=[]
+	for x in range(0,3):
+		subject = Subject("Wow","A")
+		subjects.append(subject)
+
+	student = Student("Linus Torvalds",subjects)
+	json.dumps(student)
+
+```
+
+it fails with subject object not serializeable . Now after some futile search into pickle,jsonpickle and many other thingies , what worked was 
+
+```python
+
+	subjects.append(subject.__dict__)
+
+```
+
+#### Thanks for reading!
