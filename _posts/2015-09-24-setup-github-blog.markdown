@@ -1,8 +1,8 @@
 ---
 layout: post
 title:  "Set up your own github blog"
-date:   2015-09-24 13:37:27
-categories: jekyll update
+date:   2015-09-24
+categories: stuff
 ---
 
 Hey Guys . First post . Pretty Exciting . This post is about setting up your very own github blog like me and then you can also post your steps to set up your github blog . (F**cking recursive posts).

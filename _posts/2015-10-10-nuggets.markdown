@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Some nuggets/learnings"
-date:   2015-09-24 13:37:27
+date:   2015-10-10
 categories: stuff
 ---
 
