@@ -1,0 +1,315 @@
+---
+layout: post
+title:  "Java 8 Capabilities,What's in it for you?"
+date:   2015-09-20
+categories: java8
+---
+
+With Java 8 , there have been many welcoming changes in java. This has been the first release after java 5 with so many significant changes.
+This blog post is inspired from [talk](https://www.youtube.com/watch?v=j9nj5dTo54Q) from Venkat Subramaniam.
+
+With Java 6,there were no changes in language capabilities but modifications to the JVM.
+Java 7 introduced the feature to put underscore in numerical literals Hee.Hee. Now the ancient java people can read these numbers better.
+
+```java
+long creditCardNumber = 1234_5678_9012_3456L;
+long socialSecurityNumber = 999_99_9999L;
+float pi = 	3.14_15F;
+```
+
+#### Lambda Expressions have been a much talked about feature of Java8. But what are lambda expressions and how are they useful to us?
+
+Lambda expressions are anonymous methods aimed at replacing Anonymous Inner Classes in Java.They allow us to do function composition in the same way that we do object composition in java.
+Lets start with an example.
+
+```java
+import java.util.*;
+import java.util.function.Consumer;
+
+public class Sample {
+  public static void main(String[] args) {
+    List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);
+    
+    // Complex but familiar code. //Self-Inflicted Wound Pattern. 
+    for(int i = 0; i < numbers.size(); i++) {
+      System.out.println(i);
+    }
+    
+    // Better . Simpler . Both are external iterators. 
+    // foreach java5
+    for(int e : numbers) {
+      System.out.println(e);
+    }
+
+    // Internal iterator. Collection , Do the looping , i don't care how.  Really easy to parallelize it. 
+    numbers.forEach(
+        // Anonymous Inner Classes . Workaround for lack of lambda expressions in java 8. This is good ,
+        // But Heck no , to Anonymous Inner Classes. Lots of Ceremony in it.
+        /**
+        * Represents an operation that accepts a single input argument and returns no
+        *  result. Unlike most other functional interfaces, Consumer is expected
+        * to operate via side-effects. */
+        new Consumer<Integer>() {
+            public void accept(Integer number) {
+                System.out.println(number);
+            }
+        }
+    );
+
+    // Anonymous function. Lambda Expressions.
+    numbers.forEach((Integer number) -> System.out.println(number));
+    
+    // Optional Type Declaration -- Type Inference -- No need to declare the type of the perimeter.
+    numbers.forEach(number -> System.out.println(number));
+    
+    // Not Complex , But Unfamiliar.
+    // Double Colon Operator in Java8. Method References.
+    numbers.forEach(System.out::println);
+  }
+}
+```
+
+### Functional interfaces
+
+Functional interfaces have a single functionality to exhibit.There is some common feature among the (java.awt.event.ActionListener, java.util.Comparator, java.util.concurrent.Callable) interfaces and that feature is they have only one method declared in their interface definition.These interfaces are also called Single Abstract Method interfaces (SAM Interfaces). We can use the annotation **@FunctionalInterface** while defining a functional interface to get compile timer errors in case.
+Functional Interfaces can have only one abstract methods but multiple default methods are allowed.
+
+### Method References
+
+You use lambda expressions to create anonymous methods. Sometimes, however, a lambda expression does nothing but call an existing method. In those cases, it's often clearer to refer to the existing method by name. Method references enable you to do this; they are compact, easy-to-read lambda expressions for methods that already have a name.
+
+There are four kinds of method references:
+
+| Kind 	                                                                      |  Example                               |
+| --------------------------------------------------------------------------- |  ------------------------------------  |
+| Reference to a static method 	                                              |  ContainingClass::staticMethodName     |
+| Reference to an instance method of a particular object 	                  |  containingObject::instanceMethodName  |
+| Reference to an instance method of an arbitrary object of a particular type |  ContainingType::methodName            | 
+| Reference to a constructor 	                                              |  ClassName::new                        |
+
+
+### Mapping operation: eliminating mutability
+
+```java
+/**
+ * A sequence of elements supporting sequential and parallel aggregate
+ * operations.  The following example illustrates an aggregate operation using
+ * {@link Stream} and {@link IntStream}:*/
+```
+
+```java
+import java.util.*;
+import java.util.function.*;
+
+public class Streamy {
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6);
+
+        // Imperative Code . Using Mutations. How Will you make it concurrent for eg. ?
+        int totalOfValuesDoubled = 0;
+        for(int number : numbers) {
+            totalOfValuesDoubled += number * 2;
+        }
+
+        System.out.println(totalOfValuesDoubled);
+
+        // Functional Style Code.
+        System.out.println(
+                numbers.stream()
+                        .mapToInt(e -> e*2)
+                        .sum());
+
+        // Map-Reduce You Guys , Big Data ... Oooh!!
+        System.out.println(
+            numbers.stream()
+                .map(e -> e*2)
+                .reduce(0,(c,e) -> c+e));
+    }
+}
+```
+
+How do lambda expressions look under the covers.
+
+Are Lambda Expressions under the hood Anonymous Inner Classes . Lets see.
+
+InvokeDynamic . Byte Code . JIT Level Optimization. 
+
+1. invokevirtual
+2. invokestatic
+3. invokeinterface
+4. invokespecial
+
+5. (New Guy , Say Hello) invokedynamic
+
+invokedynamic is a bytecode instruction that facilitates the implementation of dynamic languages (for the JVM) through dynamic method invocation.
+
+To read more I would refer you to [this](https://www.infoq.com/articles/Invokedynamic-Javas-secret-weapon) and [this](http://blog.headius.com/2008/09/first-taste-of-invokedynamic.html) blog.
+
+How are these new methods available on existing interfaces ?
+
+Intefaces now have default methods.
+
+1. Default Methods are inherited automatically.
+2. You can override a default method.
+3. Methods in the class hierarchy rule.
+4. Collision between interface. Need to resolve it yourself.
+
+
+
+```java
+interface Fly {
+    default void takeOff() { System.out.println("Fly::takeOff"); }
+    default void land() { System.out.println("Fly::land"); }
+    default void turn() { System.out.println("Fly::turn"); }
+    default void cruise() { System.out.println("Fly::cruise"); }
+}
+
+interface FastFly extends Fly {
+    default void takeOff() { System.out.println("FastFly::takeOff"); }
+}
+
+interface Sail {
+    default void cruise() { System.out.println("Sail::Cruise"); }
+    default void turn() { System.out.println("Sail::turn"); }
+}
+
+class Vehicle {
+    public void turn() { System.out.println("Vehicle::turn"); }
+}
+
+class SeaPlane extends Vehicle implements FastFly, Sail {
+    public void cruise() {
+        // Need the word super because interfaces can have STATIC methods. 
+        FastFly.super.cruise();
+        System.out.println("SeaPlane::cruise"); 
+    }
+}
+
+public class InterfaceExample {
+
+    public static void main(String[] args){
+        SeaPlane seaPlane = new SeaPlane();
+        seaPlane.takeOff();
+        seaPlane.turn();
+        seaPlane.cruise();
+        seaPlane.land();
+    }
+
+}
+
+```
+
+Do you need abstract classes ? Interfaces are better than abstract classes.
+
+Comparator Interface . Many really awesome default methods. 
+
+[Read here](http://howtodoinjava.com/java-8/using-comparator-becomes-easier-with-lambda-expressions-java-8)
+
+Default methods
+Implementing Strategy pattern
+
+```java
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Predicate;
+
+class Asset {
+    public enum AssetType { STOCK, BOND };
+
+    public final AssetType type;
+    public final int value;
+
+    public Asset(AssetType assetType, int assetValue) {
+        type = assetType;
+        value = assetValue;
+    }
+}
+public class PredicateExample {
+    public static void totalAssets(List<Asset> assets, Predicate<Asset> selector) {
+
+        int total = 0;
+        for(Asset ass : assets){
+            if(selector.test(ass)){
+                total += ass.value;
+            }
+        }
+
+        System.out.println(total);
+
+        /*System.out.println(
+                assets.stream()
+                        .filter(selector)
+                        .mapToInt(asset -> asset.value)
+                        .sum()); */
+    }
+
+    public static void main(String[] args) {
+        List<Asset> assets = Arrays.asList(
+                new Asset(Asset.AssetType.STOCK, 100),
+                new Asset(Asset.AssetType.BOND, 200),
+                new Asset(Asset.AssetType.STOCK, 300),
+                new Asset(Asset.AssetType.BOND, 400)
+        );
+
+
+        //We don't want to go this route.
+        //totalAssets(assets);
+        //totalStockAssets(assets);
+        //totalBondAssets(assets);
+
+        totalAssets(assets, asset -> true);
+        totalAssets(assets, asset -> asset.type == Asset.AssetType.STOCK);
+        totalAssets(assets, asset -> asset.type == Asset.AssetType.BOND);
+    }
+}
+```
+
+Composing with lambda expressions
+
+```java
+import java.util.*;
+import java.util.function.Predicate;
+
+public class ComposingLambda {
+    public static boolean isGreaterThan2(int number) {
+        return number > 2;
+    }
+
+    public static boolean isEven(int number) {
+        return number % 2 == 0;
+    }
+
+    public static int doubleIt(int number) {
+        return number * 2;
+    }
+
+    public static void main(String[] args) {
+        List<Integer> numbers = Arrays.asList(1, 2, 3,4,5,6);
+
+        //double the first even number greater than 3 from the list
+
+        System.out.println(
+                numbers.stream()
+                        // intermediate operation
+                        .filter(ComposingLambda::isGreaterThan2)
+                        .filter(ComposingLambda::isEven)
+                        .mapToInt(ComposingLambda::doubleIt)
+                        // short-circuiting terminal operation
+                        .findFirst()
+                        .orElse(0)
+        );
+    }
+}
+
+```
+Parallel Libraries
+
+A word of Caution:
+
+Consider using S.parallelStream().operation(F) instead of S.stream().operation(F) when operations are independent, and either computationally expensive or applied to many elements of efficiently splittable data structures, or both. In more detail:
+
+* F, the per-element function (usually a lambda) is independent: the computation for each element does not rely on or impact that of any other element. (See the stream package summary for further guidance about using stateless non-interfering functions.)
+* S, the source collection is efficiently splittable. There are a few other readily parallelizable stream sources besides Collections, for example, java.util.SplittableRandom (for which you can use the stream.parallel() method to parallelize). But most sources based on IO are designed primarily for sequential use.
+* The total time to execute the sequential version exceeds a minimum threshold. These days, the threshold is roughly (within a factor of ten of) 100 microseconds across most platforms. You don't need to measure this precisely though. You can estimate this well enough in practice by multiplying N (the number of elements) by Q (cost per element of F), in turn guestimating Q as the number of operations or lines of code, and then checking that N * Q is at least 10000. (If you are feeling cowardly, add another zero or two.) So when F is a tiny function like x -> x + 1, then it would require N >= 10000 elements for parallel execution to be worthwhile. And conversely, when F is a massive computation like finding the best next move in a chess game, the Q factor is so high that N doesn't matter so long as the collection is completely splittable.
+
+[Why They are not Suitable for Commercial Applications](https://dzone.com/articles/whats-wrong-java-8-part-iii)
