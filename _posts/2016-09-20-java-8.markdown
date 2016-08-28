@@ -1,8 +1,8 @@
 ---
 layout: post
-title:  "Java 8 Capabilities,What's in it for you?"
-date:   2015-09-20
-categories: java8
+title: "Java 8 Capabilities,What's in it for you?"
+date: 2015-09-20
+categories: stuff
 ---
 
 With Java 8 , there have been many welcoming changes in java. This has been the first release after java 5 with so many significant changes.
@@ -313,3 +313,87 @@ Consider using S.parallelStream().operation(F) instead of S.stream().operation(F
 * The total time to execute the sequential version exceeds a minimum threshold. These days, the threshold is roughly (within a factor of ten of) 100 microseconds across most platforms. You don't need to measure this precisely though. You can estimate this well enough in practice by multiplying N (the number of elements) by Q (cost per element of F), in turn guestimating Q as the number of operations or lines of code, and then checking that N * Q is at least 10000. (If you are feeling cowardly, add another zero or two.) So when F is a tiny function like x -> x + 1, then it would require N >= 10000 elements for parallel execution to be worthwhile. And conversely, when F is a massive computation like finding the best next move in a chess game, the Q factor is so high that N doesn't matter so long as the collection is completely splittable.
 
 [Why They are not Suitable for Commercial Applications](https://dzone.com/articles/whats-wrong-java-8-part-iii)
+
+### Future-ology --> Async Programming !!
+
+Java Threads are very useful but sometimes you wish that a thread could return some value that we can use. Java 5 introduced **java.util.concurrent.Callable interface in concurrency package that is similar to Runnable interface but it can return any Object and able to throw Exception.
+
+```java
+import java.util.*;
+import java.util.concurrent.*;
+
+public class FutureExample implements Callable<String> {
+
+    @Override
+    public String call() throws Exception {
+        Thread.sleep(1000);
+        //return the thread name executing this callable task
+        return Thread.currentThread().getName();
+    }
+
+    public static void main(String args[]){
+        //Get ExecutorService from Executors utility class, thread pool size is 10
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        //create a list to hold the Future object associated with Callable
+        List<Future<String>> list = new ArrayList<>();
+        //Create MyCallable instance
+        Callable<String> callable = new FutureExample();
+        for(int i=0; i< 100; i++){
+            //submit Callable tasks to be executed by thread pool
+            Future<String> future = executor.submit(callable);
+            //add Future to the list, we can get return value using Future
+            list.add(future);
+        }
+        for(Future<String> fut : list){
+            try {
+                //print the return value of Future, notice the output delay in console
+                // because Future.get() waits for task to get completed
+                System.out.println(new Date()+ "::"+fut.get());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+        //shut down the executor service now
+        executor.shutdown();
+    }
+
+}
+```
+
+#### Problem with Futures
+
+A Future represents the pending result of an asynchronous computation. It offers a method — get — that returns the result of the computation when it's done.
+The problem is that a call to get is blocking until the computation is done. This is quite restrictive and can quickly make the asynchronous computation pointless.
+
+Beside implementing the Future interface, CompletableFuture also implements the CompletionStage interface.
+A CompletionStage is a promise. It promises that the computation eventually will be done.
+The great thing about the CompletionStage is that it offers a vast selection of methods that let you attach callbacks that will be executed on completion.
+This way we can build systems in a non-blocking fashion.
+
+
+supplyAsync takes a Supplier containing the code we want to execute asynchronously — in our case the sendMsg method.
+thenAccept is one of many ways to add a callback. It takes a Consumer — in our case notify — which handles the result of the preceding computation when it's done.
+If you want to continue passing values from one callback to another, thenAccept won't cut it since Consumer doesn't return anything.
+
+To keep passing values, you can simply use thenApply instead.
+
+thenApply takes a Function which accepts a value, but also return one.
+
+To avoid callback HELL , use thenCompose
+
+thenCombine combines two future
+
+[Completable Futures in Java 8](https://www.youtube.com/watch?v=-MBPQ7NIL_Y)
+
+```java
+Jeff is chillin' at the bar. Suddenly his ex walks by....
+_/﹋\_
+(・_・)?
+<,︻,>
+_/﹋\_
+Jeff don't like her. There's only one thing to do...
+_/﹋\_
+(ಠ益ಠ)
+<,︻╦╤─ ҉ - - ---
+_/﹋\_
+```
